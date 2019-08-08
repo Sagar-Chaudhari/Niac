@@ -3,10 +3,13 @@ package com.niac.test.com.niac.selenium;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -20,186 +23,159 @@ public class ReadDataEMC extends ReadExcel{
 	
 	ReadExcel excel = new ReadExcel();
 	Object[][] data;
-	Object[][] id;
+	Object[][] ids;
 	int Count;
-	String SQLQuery1 = "";
-	String SQLQuery2 = "";
-	String brokerID ="";
+	String SQLQueryOld = "";
+	String SQLQueryNew = "";
+	String id ="";
 	int k=0;
-	String FilePath = "C:\\Users\\sagar.chaudhari\\eclipse-workspace\\com.niac.selenium\\TestData\\TestData.xlsx";
+	String FolderName="";
+	String FilePath = "C:\\Users\\vitthal.chalkapure\\git\\Niac\\TestData\\TestData.xlsx";
+	public String resultFile=null;
 	public static Connection conn= null;
 	public static Statement stmt= null;
+	public static ResultSet rsForHeadings= null;
 	public static ResultSet rs1= null;
 	public static ResultSet rs2= null;
 	
-	public void Niac2k() throws Exception {
-			int i=0;
-		    data = excel.getData(FilePath, "Sheet1");
-		    SQLQuery1 = data[1][0].toString();
-		    SQLQuery2 = data[2][0].toString();
-		    //System.out.println("Query is:"+SQLQuery);
-		    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-		    conn=DriverManager.getConnection( "jdbc:sqlserver://192.168.0.54:1433","NIAC2000","ams!MM14");
-		    stmt = conn.createStatement();
-		    int total=0;
-		    
-		    Count = excel.getCount(FilePath, "Sheet2");
-		    //System.out.println("Row Count is:"+Count);
-		      XSSFWorkbook workbook = new XSSFWorkbook(); 
-		      XSSFSheet spreadsheet = workbook.createSheet("ECM_Old_New_Broker_db");
-		      XSSFRow row = spreadsheet.createRow(0);
-		      XSSFCell cell;
-		      cell = row.createCell(0);
-		      cell.setCellValue("Broker ID ");
-		      cell = row.createCell(1);
-		      cell.setCellValue("DB Name");
-		      cell = row.createCell(2);
-		      cell.setCellValue("Appointment");
-		      cell = row.createCell(3);
-		      cell.setCellValue("Commission Sent");
-		      cell = row.createCell(4);
-		      cell.setCellValue("Commn Invoices");
-		      cell = row.createCell(5);
-		      cell.setCellValue("Correspondence");
-		      cell = row.createCell(6);
-		      cell.setCellValue("Invoices");
-		      cell = row.createCell(7);
-		      cell.setCellValue("Payments Sent");
-		      cell = row.createCell(8);
-		      cell.setCellValue("Renewal Apps");
-		      cell = row.createCell(9);
-		      cell.setCellValue("Reports");
-		      cell = row.createCell(10);
-		      cell.setCellValue("Root Folder");
-		      cell = row.createCell(11);
-		      cell.setCellValue("Statements");
-		      cell = row.createCell(12);
-		      cell.setCellValue("W-9 Forms");
-		      cell = row.createCell(13);
-		      cell.setCellValue("Total Count");
-		      cell = row.createCell(14);
-		      cell.setCellValue("Status");
-		      ArrayList<String> data = new ArrayList<String>();
-		      for (int l=0;l<12;l++)
-		      {
-		    	  data.add(spreadsheet.getRow(0).getCell(l+2).getStringCellValue());
-		    	 // System.out.print(data);
-		      }
-		         
-		      k=1;				 	
-		      
-		    for (int j=1 ;j<=Count;j++)
-		    {
-		    	i=2;
-		    	total=0;
-		    	id = excel.getData(FilePath, "Sheet2");
-		    	brokerID = id[j][0].toString();
-		    	//System.out.println("BrokerID is:"+brokerID.toString());
-		    	SQLQuery1 = SQLQuery1.replaceAll("BrokerID=\\d+(\\.\\d+)?", "BrokerID="+brokerID);
-		    	SQLQuery2 = SQLQuery2.replaceAll("BrokerID=\\d+(\\.\\d+)?", "BrokerID="+brokerID);
-		    	  rs1= stmt.executeQuery(SQLQuery1);
-		    	 
-		    	  row = spreadsheet.createRow(k);
-				  cell = row.createCell(0);
-			      cell.setCellValue(brokerID);
-			      cell = row.createCell(1);
-			      cell.setCellValue("OldDB");
-				  while (rs1.next()) {
-					 
-					  String FolderCount = rs1.getString(1);
-					  String FolderName = rs1.getString(2);
-					 
-				         
-				         if (data.contains(FolderName))
-				         {
-				         cell = row.createCell(data.indexOf(FolderName)+2);	
-				         cell.setCellValue(FolderCount);
-				         i++;
-				         total=total+Integer.parseInt(FolderCount);
-				         //System.out.println("Old "+Count +" "+FolderName+ "\n");
-				         }
-				      			        	 
-				         }
-				       cell = row.createCell(data.indexOf("Total")+2);
-				       
-				       cell.setCellValue(total);
-				
-					total=0;
-				  i=2;
-				  k++;
-				  rs2= stmt.executeQuery(SQLQuery2);
-				  row = spreadsheet.createRow(k);
-				  cell = row.createCell(0);
-			      cell.setCellValue(brokerID);
-			      cell = row.createCell(1);
-			      cell.setCellValue("NewDB");
-				  while (rs2.next()) {
-					 
-					  String FolderCount = rs2.getString(1);
-					  String FolderName = rs2.getString(2);
-					   
-				         
-					  if (data.contains(FolderName))
-				         {
-				         cell = row.createCell(data.indexOf(FolderName)+2);	
-				         cell.setCellValue(FolderCount);
-				         total=total+Integer.parseInt(FolderCount);
-				          //System.out.println("New "+Count +" "+FolderName+ "\n");
-				         }
-				       				        	
-				        }
-				  cell = row.createCell(data.indexOf("Total")+2);
-			      cell.setCellValue(total);
-			      //cell.setCellFormula("(D2:D10)");
-			      spreadsheet.addMergedRegion(new CellRangeAddress(k-1, k, 14, 14));
-			      
-			       
-				   k++;
-		    }
-		   		    
-		    FileOutputStream out = new FileOutputStream(new File("C:\\Users\\sagar.chaudhari\\eclipse-workspace\\com.niac.selenium\\TestData\\DBSheet\\ECMPhase2_BrokerDB.xlsx"));
-		      workbook.write(out);
-		      out.close();
-		      workbook.close();
-		      System.out.println("ECMPhase2_BrokerDB.xlsx written successfully");
-	      
-	      /*XSSFWorkbook workbook = new XSSFWorkbook(); 
-	      XSSFSheet spreadsheet = workbook.createSheet("employee_db");
-	      XSSFRow row = spreadsheet.createRow(1);
+	//common function
+	public void Niac2k(int Q1 ,int Q2,String sheetWithIDs) throws Exception {
+		int i=0;
+	    data = excel.getData(FilePath, "SQLQuery");
+	    
+	    SQLQueryOld = data[Q1][0].toString();
+	    SQLQueryNew = data[Q2][0].toString();
+	    //System.out.println("Query is:"+SQLQuery);
+	    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+	    conn=DriverManager.getConnection( "jdbc:sqlserver://192.168.0.54:1433","NIAC2000","ams!MM14");
+	    stmt = conn.createStatement();
+	    int total=0;
+	    k=0;	
+	    Count = excel.getCount(FilePath, sheetWithIDs);
+	    //System.out.println("Row Count is:"+Count);
+	      XSSFWorkbook workbook = new XSSFWorkbook(); 
+	      XSSFSheet spreadsheet = workbook.createSheet("ECM_Old_New_"+sheetWithIDs);
+	      XSSFRow row = spreadsheet.createRow(k);
 	      XSSFCell cell;
+	      cell = row.createCell(0);
+	      cell.setCellValue(sheetWithIDs);
 	      cell = row.createCell(1);
-	      cell.setCellValue("EMP ID");
-	      cell = row.createCell(2);
-	      cell.setCellValue("EMP NAME");
-	      cell = row.createCell(3);
-	      cell.setCellValue("DEG");
-	      cell = row.createCell(4);
-	      cell.setCellValue("SALARY");
-	      cell = row.createCell(5);
-	      cell.setCellValue("DEPT");
-	      int i = 2;
-
-	      while(resultSet.next()) {
-	         row = spreadsheet.createRow(i);
-	         cell = row.createCell(1);
-	         cell.setCellValue(resultSet.getInt("eid"));
-	         cell = row.createCell(2);
-	         cell.setCellValue(resultSet.getString("ename"));
-	         cell = row.createCell(3);
-	         cell.setCellValue(resultSet.getString("deg"));
-	         cell = row.createCell(4);
-	         cell.setCellValue(resultSet.getString("salary"));
-	         cell = row.createCell(5);
-	         cell.setCellValue(resultSet.getString("dept"));
-	         i++;
-	      }
-
-	      FileOutputStream out = new FileOutputStream(new File("exceldatabase.xlsx"));
+	      cell.setCellValue("DB Name");
+	 
+	      ArrayList<String> dataList = new ArrayList<String>();
+	         
+	     			 	
+	      
+	    for (int j=1 ;j<=10;j++)
+	    {
+	    	i=2;
+	    	int l=2;
+	    	total=0;
+	    	ids = excel.getData(FilePath, sheetWithIDs);
+	    	id = ids[j][0].toString();
+	    	//System.out.println("BrokerID is:"+brokerID.toString());
+	    	SQLQueryOld = SQLQueryOld.replaceAll(sheetWithIDs+"=\\d+(\\.\\d+)?", sheetWithIDs+"="+id);
+	    	SQLQueryNew = SQLQueryNew.replaceAll(sheetWithIDs+"=\\d+(\\.\\d+)?", sheetWithIDs+"="+id);
+	    	 
+	    	 if(k==0)
+	    	 {
+	    		 rsForHeadings= stmt.executeQuery(SQLQueryOld);
+	    		 while (rsForHeadings.next()) {
+					 
+					  //String FolderCount = rs1.getString(1);
+					  FolderName = rsForHeadings.getString(2);
+					  row = spreadsheet.getRow(k);
+					  cell = row.createCell(l++);
+				      cell.setCellValue(FolderName);  
+				      dataList.add(FolderName);
+				    
+	    		 }
+	    		 cell = row.createCell(l++);
+			     cell.setCellValue("Total Count"); 
+			     dataList.add("Total Count");
+			     cell = row.createCell(l);
+			     cell.setCellValue("Status"); 
+	    		 k++;
+	    	 }
+	    	 rs1= stmt.executeQuery(SQLQueryOld);
+	    	
+	    	 row = spreadsheet.createRow(k);
+			  cell = row.createCell(0);
+		      cell.setCellValue(id);
+		      cell = row.createCell(1);
+		      cell.setCellValue("OldDB");
+	    	 for(int rc=0;rc<dataList.size();rc++) {
+	    		 cell = row.createCell(rc+2);	
+			      cell.setCellValue("0");
+	    		 if (rs1.next()) {
+	    	 				 
+				  String FolderCount = rs1.getString(1);
+				  String FolderName = rs1.getString(2);
+				 
+			         
+			         if (dataList.contains(FolderName))
+			         {
+			         cell = row.createCell(dataList.indexOf(FolderName)+2);	
+			         cell.setCellValue(FolderCount);
+			         i++;
+			         total=total+Integer.parseInt(FolderCount);
+			         
+			         }
+			        
+	    		 }		        	 
+			        
+	    	 }
+			       cell = row.createCell(dataList.indexOf("Total Count")+2);
+			       
+			       cell.setCellValue(total);
+			
+				total=0;
+			  i=2;
+			  k++;
+			  rs2= stmt.executeQuery(SQLQueryNew);
+			  row = spreadsheet.createRow(k);
+			  cell = row.createCell(0);
+		      cell.setCellValue(id);
+		      cell = row.createCell(1);
+		      cell.setCellValue("NewDB");
+		      for(int rc=0;rc<dataList.size();rc++) {	
+		    	  cell = row.createCell(rc+2);	
+			      cell.setCellValue("0");
+		      }
+			      while (rs2.next()) {
+			      
+				  String FolderCount = rs2.getString(1);
+				  String FolderName = rs2.getString(2);
+				   
+				  
+				  if (dataList.contains(FolderName))
+			         {
+					 cell= row.getCell(dataList.indexOf(FolderName)+2);
+			         cell.setCellValue(FolderCount);
+			         total=total+Integer.parseInt(FolderCount);
+			          //System.out.println("New "+Count +" "+FolderName+ "\n");
+			         }
+				 
+		    	  }
+		    	  
+			        
+			  cell = row.createCell(dataList.indexOf("Total Count")+2);
+		      cell.setCellValue(total);
+		      //cell.setCellFormula("(D2:D10)");
+		      spreadsheet.addMergedRegion(new CellRangeAddress(k-1, k, dataList.size()+2, dataList.size()+2));
+		      
+		       
+			   k++;
+	    }
+	    Timestamp currentTimestamp = new java.sql.Timestamp(Calendar.getInstance().getTime().getTime());
+	    resultFile="ECMPhase2_DB_"+sheetWithIDs+"_"+currentTimestamp.getDate()+currentTimestamp.getHours()+""+currentTimestamp.getMinutes()+".xlsx";
+	    FileOutputStream out = new FileOutputStream(new File("C:\\Users\\vitthal.chalkapure\\git\\Niac\\TestData\\DBSheet\\"+resultFile));
 	      workbook.write(out);
 	      out.close();
 	      workbook.close();
-	      System.out.println("exceldatabase.xlsx written successfully");*/
-	      
-	   }
+	      System.out.println("File written successfully");
+      
+      
+   }
 	 
 }
