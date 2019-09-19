@@ -13,7 +13,7 @@ public static void main(String[] args)  throws Exception {
 	for(int i=1;i<=testCount;i++)
 	{
 		if(testC[i][1].toString().equalsIgnoreCase("Y")) {
-		rd.Niac2k((i*2)-1,(i*2),testC[i][2].toString());
+		rd.Niac2k((i*2)-1,(i*2),testC[i][2].toString(),testC[i][5].toString());
 		}
 	}
 	//rd.Niac2k(1, 2, "BrokerID");
